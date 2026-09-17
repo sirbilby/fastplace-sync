@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "fastplace-sync",
+  "version": "${version}",
+  "name": "FastPlace Sync",
+  "description": "Powerful client-side utility to generate fast block montage effects.",
+  "authors": ["SirBilby"],
+  "contact": {},
+  "license": "All Rights Reserved",
+  "icon": "assets/fastplace-sync/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.sirbilby.fastplacesync.client.HudRenderingEntrypoint"
+    ],
+    "modmenu": [
+      "com.sirbilby.fastplacesync.client.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "fastplace-sync.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "yet_another_config_lib_v3": ">=3.9.6+26.1-fabric"
+  }
+}
