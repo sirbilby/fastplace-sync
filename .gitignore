@@ -1,0 +1,7 @@
+/.gradle/
+/.idea/
+/build/
+/gradle/
+/run/
+/src copy/
+/src copy before cleanup/
