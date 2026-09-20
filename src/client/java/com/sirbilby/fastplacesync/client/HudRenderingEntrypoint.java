@@ -1,5 +1,6 @@
 package com.sirbilby.fastplacesync.client;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -9,6 +10,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class HudRenderingEntrypoint implements ClientModInitializer {
@@ -19,10 +21,12 @@ public class HudRenderingEntrypoint implements ClientModInitializer {
 
     private static volatile long flashStartMillis = -1;
 
+    // Boolean flag for recording state
     private static boolean recording = false;
 
     private KeyMapping keyBinding;
     private final SoundLogger soundLogger = new SoundLogger();
+
 
     @Override
     public void onInitializeClient() {
@@ -45,7 +49,17 @@ public class HudRenderingEntrypoint implements ClientModInitializer {
                 return;
             }
             while (keyBinding.consumeClick()) {
-                onCalibrationKeyPressed();
+                // Check if this should start or stop recording
+                if (!recording) {
+                    onCalibrationKeyPressed();
+                    recording = true;
+                    SoundLogger.recording = true;
+                    client.player.sendSystemMessage(Component.literal("Recording started."));
+                } else {
+                    client.player.sendSystemMessage(Component.literal("Recording finished."));
+                    recording = false;
+                    SoundLogger.recording = false;
+                }
             }
         });
 

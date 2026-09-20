@@ -27,6 +27,9 @@ public class SoundLogger implements SoundEventListener {
     // Shared globally across all instances and volatile for thread visibility
     private static volatile CalibrationState calibration = UNCALIBRATED;
 
+    // Boolean flag for recording state
+    public static boolean recording = false;
+
     @Override
     public void onPlaySound(SoundInstance instance, WeighedSoundEvents soundEvent, float range) {
         int instanceHash = System.identityHashCode(this);
@@ -110,14 +113,17 @@ public class SoundLogger implements SoundEventListener {
     }
 
     private void writeTimestamp(double relativeSeconds) {
-        String line = String.format(Locale.ROOT, "%.3f%n", relativeSeconds);
-        try (Writer writer = Files.newBufferedWriter(
-                CLICKSFILE, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            writer.write(line);
-            //LOGGER.info("Wrote timestamp to {}: {}", CLICKSFILE.toAbsolutePath(), line.trim());
-        } catch (IOException e) {
-            LOGGER.error("Failed to write to clicks.txt", e);
+        // Don't write sh*t unless recording is true
+        if (recording) {
+            String line = String.format(Locale.ROOT, "%.3f%n", relativeSeconds);
+            try (Writer writer = Files.newBufferedWriter(
+                    CLICKSFILE, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+                writer.write(line);
+                //LOGGER.info("Wrote timestamp to {}: {}", CLICKSFILE.toAbsolutePath(), line.trim());
+            } catch (IOException e) {
+                LOGGER.error("Failed to write to clicks.txt", e);
+            }
         }
     }
 
@@ -127,14 +133,18 @@ public class SoundLogger implements SoundEventListener {
 
         //LOGGER.info("[SoundLogger:{}] setCalibrationPoint called! New calibration nanos: {}", Integer.toHexString(instanceHash), calibration.calibrationNanos());
 
-        try {
-            Files.newBufferedWriter(
-                    CLICKSFILE, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).close();
-            LOGGER.info("[SoundLogger:{}] clicks.txt reset/truncated successfully.",
-                    Integer.toHexString(instanceHash));
-        } catch (IOException e) {
-            LOGGER.error("Failed to reset clicks.txt", e);
+        // Only set calibration point if not recording.
+        // setCalibrationPoint is called by onCalibrationKeyPressed, which is called before recording is set to true.
+        if (!recording) {
+            try {
+                Files.newBufferedWriter(
+                        CLICKSFILE, StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).close();
+                LOGGER.info("[SoundLogger:{}] clicks.txt reset/truncated successfully.",
+                        Integer.toHexString(instanceHash));
+            } catch (IOException e) {
+                LOGGER.error("Failed to reset clicks.txt", e);
+            }
         }
     }
 }
